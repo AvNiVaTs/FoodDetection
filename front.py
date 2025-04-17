@@ -2,16 +2,15 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+
 
 # Load the trained model
 model = tf.keras.models.load_model('food_detection_model.h5')
 
 # Subcategory labels (these are your actual model output classes)
 subcategories = [
-    'tea', 'coffee', 'soft drinks',
-    'apple', 'banana', 'kiwi',
-    'onion', 'potato', 'peas',
-    'pizza', 'burger', 'fries', 'noodles'
+    'Apple', 'Banana', 'Burger', 'Coffee', 'Fries', 'Noodles', 'Onion', 'Peas', 'Pizza', 'Potato', 'Soft Drink', 'Tea', 'kiwi'
 ]
 
 # Streamlit page configuration
@@ -50,8 +49,10 @@ if uploaded_file is not None:
     st.image(image, caption="📷 Uploaded Image", use_column_width=True)
 
     # Preprocess image for MobileNetV2
+    # Preprocess image for MobileNetV2
     img = image.resize((224, 224))
-    img_array = np.array(img) / 255.0
+    img_array = np.array(img)
+    img_array = preprocess_input(img_array)  # <-- crucial
     img_array = np.expand_dims(img_array, axis=0)
 
     # Make prediction
