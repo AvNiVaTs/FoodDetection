@@ -3,9 +3,10 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 
+# Load the trained model
 model = tf.keras.models.load_model('food_detection_model.h5')
 
-# Subcategories and mapping to categories
+# Subcategory labels (these are your actual model output classes)
 subcategories = [
     'tea', 'coffee', 'soft drinks',
     'apple', 'banana', 'kiwi',
@@ -13,24 +14,10 @@ subcategories = [
     'pizza', 'burger', 'fries', 'noodles'
 ]
 
-subcategory_to_category = {
-    'tea': 'Beverages',
-    'coffee': 'Beverages',
-    'soft drinks': 'Beverages',
-    'apple': 'Fruits',
-    'banana': 'Fruits',
-    'kiwi': 'Fruits',
-    'onion': 'Veggies',
-    'potato': 'Veggies',
-    'peas': 'Veggies',
-    'pizza': 'Fast Food',
-    'burger': 'Fast Food',
-    'fries': 'Fast Food',
-    'noodles': 'Fast Food'
-}
-
-# Streamlit Page Config
+# Streamlit page configuration
 st.set_page_config(page_title="Food Classifier", layout="centered")
+
+# Styling
 st.markdown(
     """
     <style>
@@ -51,30 +38,29 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Title
 st.title("🍔 Food Classifier")
-st.write("Upload an image of a food item and we'll tell you what it is!")
+st.write("Upload an image of a food item, and we'll tell you what it is!")
 
-# File Uploader
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+# Upload image
+uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert('RGB')
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    st.image(image, caption="📷 Uploaded Image", use_column_width=True)
 
-    # Preprocess for MobileNetV2
+    # Preprocess image for MobileNetV2
     img = image.resize((224, 224))
     img_array = np.array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    # Prediction
+    # Make prediction
     st.write("🔍 Classifying...")
     predictions = model.predict(img_array)
     predicted_index = np.argmax(predictions)
     predicted_subcategory = subcategories[predicted_index]
-    predicted_category = subcategory_to_category[predicted_subcategory]
     confidence = np.max(predictions) * 100
 
-    # Output
-    st.success(f"🍱 Predicted Subcategory: **{predicted_subcategory.title()}**")
-    st.info(f"🗂️ Category: **{predicted_category}**")
-    st.info(f"🔎 Confidence: {confidence:.2f}%")
+    # Show result
+    st.success(f"🍱 Predicted Food Item: **{predicted_subcategory.title()}**")
+    st.info(f"📈 Confidence: **{confidence:.2f}%**")
